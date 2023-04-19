@@ -18,12 +18,12 @@ initsleeplock(struct sleeplock *lk, char *name)
   lk->locked = 0;
   lk->pid = 0;
 }
-
+//睡眠锁是一种多进程间的同步机制，在某个进程持有睡眠锁时，其他进程必须等待该进程释放锁后才能获取
 void
 acquiresleep(struct sleeplock *lk)
 {
-  acquire(&lk->lk);
-  while (lk->locked) {
+  acquire(&lk->lk); //相当当前cpu，一个cpu持有
+  while (lk->locked) {//表示锁已经被其他进程获取
     sleep(lk, &lk->lk);
   }
   lk->locked = 1;

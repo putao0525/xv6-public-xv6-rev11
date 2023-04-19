@@ -44,7 +44,10 @@ mycpu(void) {
     //表达式 5 & 3 的结果为 1，因为 5 的二进制表示是 101，3 的二进制表示是 011，它们进行 AND 运算后得到 001，即十进制的 1。
     if (readeflags() & FL_IF) //进一步确认中断关闭是否生效
         panic("mycpu called with interrupts enabled\n");
-
+    //在多处理器系统中，每个处理器都有自己的 LAPIC，用于管理该处理器的中断。
+    // APIC ID 是一个唯一标识符，它可以被用来识别不同的处理器，并且在将来的操作中可以用来进行中断的分配和路由。
+    // 因此，这段代码的目的是获取当前处理器的 APIC ID，以便于后续的中断处理和调度。
+    //可以动态获取当前执行的cpu ID， 有点类似java的获取当前线程名称
     apicid = lapicid();
     // APIC IDs are not guaranteed to be contiguous. Maybe we should have
     // a reverse map, or reserve a register to store &cpus[i].
@@ -72,7 +75,7 @@ myproc(void) {
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
 // state required to run in the kernel.
-// Otherwise return 0.
+// Otherwise, return 0.
 static struct proc *
 allocproc(void) {
     struct proc *p;
@@ -85,6 +88,8 @@ allocproc(void) {
             goto found;
 
     release(&ptable.lock);
+    //一些语言中，它们有可能被混淆。例如，在C语言中，空指针常常用NULL宏来表示，而该宏的值实际上就是零。
+    // 因此，在某些情况下，程序员需要谨慎地区分它们，以避免错误的结果。
     return 0;
 
     found:
@@ -98,8 +103,10 @@ allocproc(void) {
         p->state = UNUSED;
         return 0;
     }
-    sp = p->kstack + KSTACKSIZE;
-
+    sp = p->kstack + KSTACKSIZE;//sp 用于存储当前堆栈的顶部地址
+    //内核栈顶的地址通常是在进程的内核栈顶部分预留一段空间，用于存储陷阱帧。
+    // 陷阱帧是一个数据结构，它记录了当CPU从用户模式切换到内核模式时，
+    // 必须保存的CPU寄存器的值以及一些其他与处理中断和异常有关的信息，例如中断号、错误码等。
     // Leave room for trap frame.
     sp -= sizeof *p->tf;
     p->tf = (struct trapframe *) sp;

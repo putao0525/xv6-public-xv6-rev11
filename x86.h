@@ -109,11 +109,13 @@ cli(void) {
     asm volatile("cli");
 }
 
+//该指令将IF标志位置为1以启用中断。
 static inline void
 sti(void) {
     asm volatile("sti");
 }
 
+//返回旧值
 static inline uint
 xchg(volatile uint *addr, uint newval) {
     uint result;

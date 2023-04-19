@@ -11,10 +11,11 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-to-pointer-cast"
+
 void
 initlock(struct spinlock *lk, char *name) {
-    lk->name = name;
-    lk->locked = 0;
+    lk->name = name;//业务名称
+    lk->locked = 0; //空闲状态，没有被获取
     lk->cpu = 0;
 }
 
@@ -30,10 +31,9 @@ acquire(struct spinlock *lk) {
 
     // The xchg is atomic.
     while (xchg(&lk->locked, 1) != 0);
-
-    // Tell the C compiler and the processor to not move loads or stores
-    // past this point, to ensure that the critical section's memory
-    // references happen after the lock is acquired.
+    //__sync_synchronize() 是GCC内置函数，用于保证在其前后的内存访问操作按正确的顺序执行，并且不会被编译器优化掉。
+    //具体来说，__sync_synchronize() 会生成一个完整的内存屏障（memory barrier），它确保了在这个屏障之前和之后的所有内存读写操作都是按照程序代码中的顺序执行的，而不会受到编译器或CPU的重排或优化的影响。
+    //使用 __sync_synchronize() 可以有效地避免多线程编程中出现的一些常见问题，例如数据竞争、缓存一致性等。但需要注意的是，过度依赖内存屏障可能会导致性能问题，因此需要根据具体的业务场景和需求进行权衡和选择。
     __sync_synchronize();
 
     // Record info about lock acquisition for debugging.
@@ -65,6 +65,16 @@ release(struct spinlock *lk) {
     popcli();
 }
 
+//这段代码是一个函数，它的作用是记录当前调用栈的返回地址（也就是保存在栈帧中的%eip寄存器）。
+//该函数接受两个参数：void *v和uint pcs[]。
+// void *v表示当前函数的栈帧指针，
+// 而uint pcs[]则是用来保存返回地址的数组。
+//函数首先将void *v转换为ebp指针，通过遍历%ebp链表，依次获取每个调用者的返回地址，并将其保存在pcs数组中。
+// 这个过程最多进行10次，如果超过10次或者遇到无效的%ebp指针，循环就会终止。
+// 如果循环不足10次，剩余的pcs数组元素将被设置为0。
+//需要注意的是，该函数只能在x86架构上运行，因为它使用了特定于x86架构的寄存器名称和指令。
+// 此外，该函数还假定栈帧以特定的方式布局，即每个栈帧都包括保存先前帧指针的位置，
+// 并且先前帧指针位于当前帧指针的下方2个字节处。
 // Record the current call stack in pcs[] by following the %ebp chain.
 void
 getcallerpcs(void *v, uint pcs[]) {
