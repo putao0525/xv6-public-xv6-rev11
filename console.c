@@ -103,6 +103,7 @@ cprintf(char *fmt, ...) {
     if (locking)
         release(&cons.lock);
 }
+
 //在该函数中，首先禁用中断（cli），然后解锁控制台（cons.locking = 0）。
 // 接着使用 cprintf 输出错误信息，并通过 getcallerpcs 获取当前函数调用栈中的前10个返回地址，并将其依次打印出来。
 // 最后将 panicked 标志设置为 1，以防止其他 CPU 继续运行，最后进入死循环以停止系统运行。
@@ -283,14 +284,16 @@ consolewrite(struct inode *ip, char *buf, int n) {
     return n;
 }
 
+//系统在启动的时候调用
 void
 consoleinit(void) {
+    //编译器会将其转换为一个固定的内存地址，该地址在程序运行期间不会改变
     initlock(&cons.lock, "console");
-
+    //使用函数指针输出一个静态变量，相当于买面向对象编程了
     devsw[CONSOLE].write = consolewrite;
     devsw[CONSOLE].read = consoleread;
     cons.locking = 1;
-
+    //apic 可编程中断处理逻辑
     ioapicenable(IRQ_KBD, 0);
 }
 
