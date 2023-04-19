@@ -81,6 +81,10 @@ ltr(ushort sel) {
     asm volatile("ltr %0" : : "r" (sel));
 }
 
+//EFLAGS寄存器是一种特殊的寄存器，它包含了与处理器状态和控制相关的标志位。通过读取EFLAGS寄存器，可以获取当前处理器的状态信息。
+//具体地，这个函数使用了GCC内联汇编的语法来执行一个汇编指令序列，将EFLAGS寄存器的值读取到一个本地变量中，并返回该变量的值。
+// 这个指令序列使用了pushfl和popl指令，分别将EFLAGS寄存器的值压入栈中，再从栈中弹出并保存到本地变量中。
+//此外，这个函数还使用了GCC扩展的输出约束语法，将本地变量的地址绑定到了寄存器%0上，以便在汇编指令序列中使用。
 static inline uint
 readeflags(void) {
     uint eflags;
@@ -92,7 +96,8 @@ static inline void
 loadgs(ushort v) {
     asm volatile("movw %0, %%gs" : : "r" (v));
 }
-
+//cli 指令是 x86 架构中的一条汇编指令，用于禁用中断。
+// 在操作系统内核开发中，通常会使用这个指令来保护某些关键代码段，防止中断干扰，从而提高系统的稳定性和可靠性
 static inline void
 cli(void) {
     asm volatile("cli");
@@ -164,3 +169,49 @@ struct trapframe {
     ushort ss;
     ushort padding6;
 };
+
+//内联汇编的格式
+//asm (assembly template
+//    : output operands
+//    : input operands
+//    : clobbered registers);
+
+//int a = 1, b = 2, sum;
+//asm ("add %1, %2\n\t" // 加法指令
+//     "mov %0, %1"    // 存储结果到sum
+//     : "=r" (sum)    // 输出操作数为sum
+//     : "r" (a), "r" (b) // 输入操作数为a和b
+//     : "cc");        // 修改了条件码寄存器
+
+//- 寄存器约束：指定要使用的寄存器。例如，"=a"表示将结果存储在eax寄存器中，"r"表示使用任何可用的通用寄存器。
+//- 内存约束：指定要使用的内存地址。例如，"m"表示使用任何内存地址，"m(%%eax)"表示使用eax寄存器中存储的地址。
+//- 立即数约束：指定要使用的立即数。例如，"i"表示使用任何立即数，"i(5)"表示使用值为5的立即数。
+//- 输出约束：指定输出操作数的位置。例如，"=r"表示将结果存储在任何可用的通用寄存器中，"=m(%%eax)"表示将结果存储在eax寄存器中存储的地址中。
+//- 输入约束：指定输入操作数的位置。例如，"r"表示使用任何可用的通用寄存器，"m(%%eax)"表示使用eax寄存器中存储的地址。
+//+m表示使用任意一个寄存器来存储*addr内存位置的值
+//=a表示使用eax寄存器来存储result变量的值
+
+//int atomic_add(int* ptr, int val) {
+//    int result;
+//    asm volatile("lock; xaddl %0, %1;"
+//        : "=r" (result), "=m" (*ptr)
+//        : "0" (val), "m" (*ptr)
+//        : "memory");
+//    return result + val;
+//}
+
+//: "memory");这是一个clobber约束，它告诉编译器这段代码可能会修改内存，需要刷新所有内存缓存。这是为了确保多个线程之间的内存可见性。
+//int input1 = 5;
+//int input2 = 10;
+//int result;
+//
+//__asm__ __volatile__(
+//    "addl %[input1], %[input2]\n\t"
+//    : [result] "=r" (result)
+//    : [input1] "r" (input1), [input2] "m" (input2)
+//);
+//
+//printf("Result: %d\n", result);
+
+//将寄存器eax中的值存储在变量x中
+//movl %eax, x

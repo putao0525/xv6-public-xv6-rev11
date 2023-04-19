@@ -40,7 +40,8 @@ cpuid() {
 struct cpu *
 mycpu(void) {
     int apicid, i;
-
+    //位运算符号，
+    //表达式 5 & 3 的结果为 1，因为 5 的二进制表示是 101，3 的二进制表示是 011，它们进行 AND 运算后得到 001，即十进制的 1。
     if (readeflags() & FL_IF)
         panic("mycpu called with interrupts enabled\n");
 

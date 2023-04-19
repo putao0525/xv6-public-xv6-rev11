@@ -2,6 +2,10 @@
 // x86 memory management unit (MMU).
 
 // Eflags register
+// CPU通常有一个或多个中断线路，当某个外部事件发生时，CPU会停止执行当前的指令，跳转到相应的中断服务程序来处理这个事件，处理完成后再返回到原来的程序继续执行。
+// FL_IF代表着CPU的中断使能标志，
+// 如果这个标志被设置为1，则表示CPU允许中断事件发生；反之，如果被设置为0，则表示CPU禁止中断事件发生，不会响应任何中断请求。
+// 因此，在使用中断的系统中，程序需要根据具体情况来设置FL_IF标志，以便控制和管理中断的发生和响应。
 #define FL_IF           0x00000200      // Interrupt Enable
 
 // Control Register flags
@@ -24,19 +28,19 @@
 #ifndef __ASSEMBLER__
 // Segment Descriptor
 struct segdesc {
-  uint lim_15_0 : 16;  // Low bits of segment limit
-  uint base_15_0 : 16; // Low bits of segment base address
-  uint base_23_16 : 8; // Middle bits of segment base address
-  uint type : 4;       // Segment type (see STS_ constants)
-  uint s : 1;          // 0 = system, 1 = application
-  uint dpl : 2;        // Descriptor Privilege Level
-  uint p : 1;          // Present
-  uint lim_19_16 : 4;  // High bits of segment limit
-  uint avl : 1;        // Unused (available for software use)
-  uint rsv1 : 1;       // Reserved
-  uint db : 1;         // 0 = 16-bit segment, 1 = 32-bit segment
-  uint g : 1;          // Granularity: limit scaled by 4K when set
-  uint base_31_24 : 8; // High bits of segment base address
+    uint lim_15_0: 16;  // Low bits of segment limit
+    uint base_15_0: 16; // Low bits of segment base address
+    uint base_23_16: 8; // Middle bits of segment base address
+    uint type: 4;       // Segment type (see STS_ constants)
+    uint s: 1;          // 0 = system, 1 = application
+    uint dpl: 2;        // Descriptor Privilege Level
+    uint p: 1;          // Present
+    uint lim_19_16: 4;  // High bits of segment limit
+    uint avl: 1;        // Unused (available for software use)
+    uint rsv1: 1;       // Reserved
+    uint db: 1;         // 0 = 16-bit segment, 1 = 32-bit segment
+    uint g: 1;          // Granularity: limit scaled by 4K when set
+    uint base_31_24: 8; // High bits of segment base address
 };
 
 // Normal segment
@@ -105,56 +109,56 @@ typedef uint pte_t;
 
 // Task state segment format
 struct taskstate {
-  uint link;         // Old ts selector
-  uint esp0;         // Stack pointers and segment selectors
-  ushort ss0;        //   after an increase in privilege level
-  ushort padding1;
-  uint *esp1;
-  ushort ss1;
-  ushort padding2;
-  uint *esp2;
-  ushort ss2;
-  ushort padding3;
-  void *cr3;         // Page directory base
-  uint *eip;         // Saved state from last task switch
-  uint eflags;
-  uint eax;          // More saved state (registers)
-  uint ecx;
-  uint edx;
-  uint ebx;
-  uint *esp;
-  uint *ebp;
-  uint esi;
-  uint edi;
-  ushort es;         // Even more saved state (segment selectors)
-  ushort padding4;
-  ushort cs;
-  ushort padding5;
-  ushort ss;
-  ushort padding6;
-  ushort ds;
-  ushort padding7;
-  ushort fs;
-  ushort padding8;
-  ushort gs;
-  ushort padding9;
-  ushort ldt;
-  ushort padding10;
-  ushort t;          // Trap on task switch
-  ushort iomb;       // I/O map base address
+    uint link;         // Old ts selector
+    uint esp0;         // Stack pointers and segment selectors
+    ushort ss0;        //   after an increase in privilege level
+    ushort padding1;
+    uint *esp1;
+    ushort ss1;
+    ushort padding2;
+    uint *esp2;
+    ushort ss2;
+    ushort padding3;
+    void *cr3;         // Page directory base
+    uint *eip;         // Saved state from last task switch
+    uint eflags;
+    uint eax;          // More saved state (registers)
+    uint ecx;
+    uint edx;
+    uint ebx;
+    uint *esp;
+    uint *ebp;
+    uint esi;
+    uint edi;
+    ushort es;         // Even more saved state (segment selectors)
+    ushort padding4;
+    ushort cs;
+    ushort padding5;
+    ushort ss;
+    ushort padding6;
+    ushort ds;
+    ushort padding7;
+    ushort fs;
+    ushort padding8;
+    ushort gs;
+    ushort padding9;
+    ushort ldt;
+    ushort padding10;
+    ushort t;          // Trap on task switch
+    ushort iomb;       // I/O map base address
 };
 
 // Gate descriptors for interrupts and traps
 struct gatedesc {
-  uint off_15_0 : 16;   // low 16 bits of offset in segment
-  uint cs : 16;         // code segment selector
-  uint args : 5;        // # args, 0 for interrupt/trap gates
-  uint rsv1 : 3;        // reserved(should be zero I guess)
-  uint type : 4;        // type(STS_{IG32,TG32})
-  uint s : 1;           // must be 0 (system)
-  uint dpl : 2;         // descriptor(meaning new) privilege level
-  uint p : 1;           // Present
-  uint off_31_16 : 16;  // high bits of offset in segment
+    uint off_15_0: 16;   // low 16 bits of offset in segment
+    uint cs: 16;         // code segment selector
+    uint args: 5;        // # args, 0 for interrupt/trap gates
+    uint rsv1: 3;        // reserved(should be zero I guess)
+    uint type: 4;        // type(STS_{IG32,TG32})
+    uint s: 1;           // must be 0 (system)
+    uint dpl: 2;         // descriptor(meaning new) privilege level
+    uint p: 1;           // Present
+    uint off_31_16: 16;  // high bits of offset in segment
 };
 
 // Set up a normal interrupt/trap gate descriptor.
