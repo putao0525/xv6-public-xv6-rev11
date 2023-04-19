@@ -96,8 +96,14 @@ static inline void
 loadgs(ushort v) {
     asm volatile("movw %0, %%gs" : : "r" (v));
 }
+
 //cli 指令是 x86 架构中的一条汇编指令，用于禁用中断。
 // 在操作系统内核开发中，通常会使用这个指令来保护某些关键代码段，防止中断干扰，从而提高系统的稳定性和可靠性
+//CLI只是禁止了中断处理，它并没有关闭任何一个CPU或多个CPU。如果系统有多个CPU，则每个CPU都可以独立地执行CLI指令来禁止中断处理。
+//当所有CPU都执行了CLI指令后，系统就进入了一个无法响应中断的状态
+//CLI（Clear Interrupt）是一条汇编语言指令，用于禁止CPU处理中断。
+// 执行CLI指令后，CPU会将中断标志位（IF）清零，这意味着CPU在处理指令时不会响应来自外部设备的中断信号。
+//IF（中断标志）：用于控制是否允许 CPU 响应外部中断。当该标志被设置为 1 时，CPU 允许中断；否则，中断将被禁止。
 static inline void
 cli(void) {
     asm volatile("cli");

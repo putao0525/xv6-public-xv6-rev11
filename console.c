@@ -15,10 +15,13 @@
 #include "proc.h"
 #include "x86.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
+
 static void consputc(int);
 
 static int panicked = 0;
-
+//序列化访问控制台的硬件，防止输出交叉
 static struct {
     struct spinlock lock;
     int locking;
@@ -100,7 +103,9 @@ cprintf(char *fmt, ...) {
     if (locking)
         release(&cons.lock);
 }
-
+//在该函数中，首先禁用中断（cli），然后解锁控制台（cons.locking = 0）。
+// 接着使用 cprintf 输出错误信息，并通过 getcallerpcs 获取当前函数调用栈中的前10个返回地址，并将其依次打印出来。
+// 最后将 panicked 标志设置为 1，以防止其他 CPU 继续运行，最后进入死循环以停止系统运行。
 void
 panic(char *s) {
     int i;
@@ -289,3 +294,5 @@ consoleinit(void) {
     ioapicenable(IRQ_KBD, 0);
 }
 
+
+#pragma clang diagnostic pop
