@@ -1,5 +1,7 @@
 // Routines to let C code use special x86 instructions.
 
+//该代码会向处理器发出“in”指令，从指定端口（port）读取一个字节的数据，
+// 并将结果存储在寄存器eax中。最后，该代码将eax中的值传递给变量data。
 static inline uchar
 inb(ushort port) {
     uchar data;

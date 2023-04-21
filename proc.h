@@ -31,12 +31,41 @@ extern int ncpu;
 // The layout of the context matches the layout of the stack in swtch.S
 // at the "Switch stacks" comment. Switch doesn't save eip explicitly,
 // but it is on the stack and allocproc() manipulates it.
+
+///edi和esi的使用，EDI和ESI寄存器用于指向数组的起始位置和结束位置
+///EBX是x86架构中的一个32位寄存器，它通常用于存储指针、数组索引或其他临时数据
+///EBP寄存器是x86架构中的一个基址指针寄存器，主要用于函数调用时保存栈帧信息和访问函数参数和局部变量。//mov edi, 0x1000   ;将数组起始地址存储在EDI寄存器中
+//mov esi, edi      ;将数组结束地址存储在ESI寄存器中
+//add esi, 40       ;数组有10个元素，每个元素占4字节，所以结束地址为起始地址+40
+//
+//label:
+//    cmp edi, esi  ;比较EDI和ESI寄存器中的地址
+//    jge exit      ;如果EDI>=ESI，则跳转到exit标签
+//    add dword [edi], 1 ;将数组元素加1
+//    inc edi       ;递增EDI寄存器，指向下一个数组元素
+//    jmp label     ;跳转到label标签
+//
+//exit:
+//ebp 使用
+//1保存栈帧信息： 在函数开头，将当前EBP寄存器的值保存到栈中，并将EBP设置为当前栈顶指针，然后分配空间给局部变量。
+// 在函数返回前将EBP恢复为之前保存的值，以便回收栈空间并还原上层函数的栈帧信息。
+//push ebp      ; 将当前EBP值保存入栈
+//mov ebp, esp  ; 设置EBP为当前栈顶指针
+//sub esp, xx   ; 分配空间给局部变量，xx为所需空间大小
+//
+//...           ; 中间执行函数操作，访问局部变量等
+//
+//mov esp, ebp  ; 恢复栈顶指针
+//pop ebp       ; 恢复之前保存的EBP值
+//ret           ; 返回
+
+
 struct context {
-    uint edi;
-    uint esi;
-    uint ebx;
-    uint ebp;
-    uint eip;
+    uint edi;//扩展目的地索引寄存器
+    uint esi;//扩展源索引寄存器
+    uint ebx;//扩展基础寄存器
+    uint ebp;//扩展基址指针寄存器
+    uint eip;//扩展指令指针寄存器
 };
 
 enum procstate {

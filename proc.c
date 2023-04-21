@@ -8,6 +8,7 @@
 #include "spinlock.h"
 
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 #pragma clang diagnostic ignored "-Wpointer-to-int-cast"
 struct {
     struct spinlock lock;
@@ -108,18 +109,26 @@ allocproc(void) {
     // 陷阱帧是一个数据结构，它记录了当CPU从用户模式切换到内核模式时，
     // 必须保存的CPU寄存器的值以及一些其他与处理中断和异常有关的信息，例如中断号、错误码等。
     // Leave room for trap frame.
-    sp -= sizeof *p->tf;
-    p->tf = (struct trapframe *) sp;
+    sp -= sizeof *p->tf; // 优先级：sizeof(*(p->tf));
+    p->tf = (struct trapframe *) sp;//地址强制转换为结构体指针
 
     // Set up new context to start executing at forkret,
     // which returns to trapret.
+    //它的作用是在栈上分配4个字节的空间（sp -= 4），
+    // 将一个指向中断返回函数的指针（trapret）存储到这个位置上，然后更新栈指针（sp）的值。
     sp -= 4;
-    *(uint *) sp = (uint) trapret;
+    *(uint *) sp = (uint) trapret;//强制类型转换将 sp 指向的内存空间解释为一个 uint 类型的指针，并且在这个位置上存储 trapret 的地址。
 
     sp -= sizeof *p->context;
     p->context = (struct context *) sp;
     memset(p->context, 0, sizeof *p->context);
-    p->context->eip = (uint) forkret;
+    //在某些情况下，需要在程序中存储和传递函数指针，但是一些操作系统或硬件平台可能限制了可以使用的数据类型。
+    // 因此，将函数指针转换为整数类型可能是必要的。
+    //在某些特殊情况下，可能存在将void函数中的某些操作结果显式地返回为int值的需求。
+    // 例如，在某些嵌入式系统编程中，可能需要使用一个函数来执行某些硬件控制操作，并且该函数必须返回成功或失败的状态代码。
+    // 在这种情况下，函数可以返回一个int类型的状态码来表示成功或失败，
+    // 但仍然应该保持void作为函数的返回类型，以反映函数本质上不返回任何有意义的值。
+    p->context->eip = (uint) forkret;//函数地址转换
 
     return p;
 }
@@ -287,7 +296,7 @@ exit(void) {
 int
 wait(void) {
     struct proc *p;
-    int havekids, pid;
+    int havek   ids, pid;
     struct proc *curproc = myproc();
 
     acquire(&ptable.lock);
@@ -406,6 +415,11 @@ yield(void) {
 // will swtch here.  "Return" to user space.
 void
 forkret(void) {
+    //函数内部所有的局部变量都是通过栈空间来分配和回收内存的。然而，在使用了static关键字后，
+    // 函数内部的变量将会被分配到静态存储区中，不会随着函数的退出而被销毁，而是一直存在于程序执行期间。
+    //在使用了static关键字后，函数内部的变量只能在该函数内部访问，不能被其他函数所使用，从而保护了这些变量不被其他函数所修改或者篡改。
+    //通过在函数内部定义static变量，可以隐藏实现细节，避免将变量暴露给其他函数，提高了程序的安全性。
+    //由于static变量只会在第一次使用时进行初始化，并且其生命周期与程序运行周期相同，因此多次调用该函数时无需重复初始化该变量，从而提高了程序的性能。
     static int first = 1;
     // Still holding ptable.lock from scheduler.
     release(&ptable.lock);
