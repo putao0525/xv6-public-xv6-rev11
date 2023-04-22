@@ -8,6 +8,7 @@
 #include "elf.h"
 
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 #pragma clang diagnostic ignored "-Wpointer-to-int-cast"
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()

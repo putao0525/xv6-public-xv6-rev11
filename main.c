@@ -30,9 +30,13 @@ main(void) {
     consoleinit();   // console hardware
     uartinit();      // serial port
     pinit();         // process table
+    //中断向量初始化
     tvinit();        // trap vectors
+    //缓存块初始化
     binit();         // buffer cache
+    //文件初始化
     fileinit();      // file table
+    //磁盘初始化
     ideinit();       // disk
     startothers();   // start other processors
     kinit2(P2V(4 * 1024 * 1024), P2V(PHYSTOP)); // must come after startothers()
@@ -53,6 +57,7 @@ mpenter(void) {
 static void
 mpmain(void) {
     cprintf("cpu%d: starting %d\n", cpuid(), cpuid());
+    //中断和陷入相关的
     idtinit();       // load idt register
     xchg(&(mycpu()->started), 1); // tell startothers() we're up
     scheduler();     // start running processes

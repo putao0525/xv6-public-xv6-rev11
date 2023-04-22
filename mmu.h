@@ -62,9 +62,9 @@ struct segdesc {
 #define STA_R       0x2     // Readable (executable segments)
 
 // System segment type bits
-#define STS_T32A    0x9     // Available 32-bit TSS
-#define STS_IG32    0xE     // 32-bit Interrupt Gate
-#define STS_TG32    0xF     // 32-bit Trap Gate
+#define STS_T32A    0x9     // Available 32-bit TSS 任务状态段
+#define STS_IG32    0xE     // 32-bit Interrupt Gate 中断门
+#define STS_TG32    0xF     // 32-bit Trap Gate 陷入门
 
 // A virtual address 'la' has a three-part structure as follows:
 //
@@ -162,9 +162,9 @@ struct gatedesc {
 };
 
 // Set up a normal interrupt/trap gate descriptor.
-// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
+// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate. 判断中断门和陷入门
 //   interrupt gate clears FL_IF, trap gate leaves FL_IF alone
-// - sel: Code segment selector for interrupt/trap handler
+// - sel: Code segment selector for interrupt/trap handler 每个中断门描述符包括一个段选择符和一个偏移量. sel(一个段选择符)
 // - off: Offset in code segment for interrupt/trap handler
 // - dpl: Descriptor Privilege Level -
 //        the privilege level required for software to invoke

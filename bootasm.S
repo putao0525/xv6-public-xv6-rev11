@@ -6,6 +6,9 @@
 # The BIOS loads this code from the first sector of the hard disk into
 # memory at physical address 0x7c00 and starts executing in real mode
 # with %cs=0 %ip=7c00.
+# xorw 它将两个 16 位数值（即一个字）按位进行异或运算，并将结果存储回第一个数值中
+# $0x64 是I/O端口地址，用于与键盘控制器通信
+# inb是x86汇编语言中的一个输入指令，用于从指定的I/O端口读取一个字节
 
 .code16                       # Assemble for 16-bit mode
 .globl start
@@ -18,7 +21,7 @@ start:
   movw    %ax,%es             # -> Extra Segment
   movw    %ax,%ss             # -> Stack Segment
 
-  # Physical address line A20 is tied to zero so that the first PCs 
+  # Physical address line A20 is tied to zero so that the first PCs
   # with 2 MB would run software that assumed 1 MB.  Undo that.
 seta20.1:
   inb     $0x64,%al               # Wait for not busy
