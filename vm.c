@@ -34,10 +34,28 @@ seginit(void) {
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.
+
+//pgdir 是页目录，va 是虚拟地址，alloc 表示是否需要为新创建的页表分配物理内存。
+//该函数首先通过 PDX(va) 宏获取虚拟地址 va 所属的页目录项的索引，并通过指针 pde 获取该页目录项的地址。然后判断此页目录项是否存在（即是否设置了 PTE_P 标志位）。如果存在，则说明对应的页表已经在物理内存中分配好了，可以直接获取该页表的地址并返回。
+//如果不存在，则说明需要为其分配物理内存，这时会根据 alloc 参数进行判断。
+//如果 alloc 为 false，则说明不允许分配物理内存并且该页表不存在，因此直接返回 nullptr；否则会调用 kalloc() 函数分配一页物理内存，并将该页清零初始化。
+// 接着会将新分配的物理页的地址设置到页目录项中，并设置 PTE_P、PTE_W 和 PTE_U 三个标志位，以便在后续访问该页表时可以进行读写操作和用户态访问。
+// 最后返回虚拟地址 va 对应的页表项的地址，即 &pgtab[PTX(va)]。
+
+//在 xv6 操作系统中，一个页的大小为 4096 字节（4KB）。
+//线性地址到物理地址的转换可分为两个步骤：首先通过页表将线性地址转换为物理地址的页框号，然后使用该页框号和偏移量计算出物理地址。
+//具体来说，xv6 中的页表采用了两级页表结构。第一级页表是一个指针数组，每个元素指向一个二级页表。第二级页表也是一个指针数组，每个元素指向一个物理页框或者为空。因此，一个线性地址需要通过两次间接寻址才能得到对应的物理页框号。
+//例如，假设一个线性地址为 va = 0x80123456，那么它的页目录索引（PDX(va)）是 2，页表索引（PTX(va)）是 308，可以得到：
+//1. 从页目录表的第 2 项找到二级页表的地址；
+//2. 从二级页表的第 308 项找到对应页框号；
+//3. 将页框号左移 12 位并加上偏移量（即线性地址的低 12 位），即可得到物理地址。
+//实际上，在 xv6 中有一个名为 `walkpgdir` 的函数，用于执行以上的步骤，并返回对应物理地址的指针。
+
+
 static pte_t *
 walkpgdir(pde_t *pgdir, const void *va, int alloc) {
     pde_t *pde;
-    pte_t *pgtab;
+    pte_t *pgtab; //虚拟地址
 
     pde = &pgdir[PDX(va)];
     if (*pde & PTE_P) {
@@ -50,7 +68,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc) {
         // The permissions here are overly generous, but they can
         // be further restricted by the permissions in the page table
         // entries, if necessary.
-        *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
+        *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U; //页表项
     }
     return &pgtab[PTX(va)];
 }
@@ -58,23 +76,38 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc) {
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
+
+
+//pde_t *pgdir：指向页目录表的指针，表示需要修改哪个进程的地址空间。
+//void *va：虚拟地址，需要被映射的起始地址。
+//uint size：需要映射的字节数。
+//uint pa：物理地址，映射到该地址上。
+//int perm：权限位掩码，包含可读、可写和可执行等权限信息。
+///用于将指定的虚拟地址空间映射到给定的物理地址上，并设置相应的权限
 static int
 mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm) {
     char *a, *last;
     pte_t *pte;
-
+    //将虚拟地址和物理地址都按照页面大小（PGSIZE）对齐后的起始地址和结束地址。
     a = (char *) PGROUNDDOWN((uint) va);
     last = (char *) PGROUNDDOWN(((uint) va) + size - 1);
     for (;;) {
-        if ((pte = walkpgdir(pgdir, a, 1)) == 0)
+        //walkpgdir 根据给定的虚拟地址和页目录表，找到对应的页表项，并返回指向该页表项的指针。
+        if ((pte = walkpgdir(pgdir, a, 1)) == 0) {
             return -1;
-        if (*pte & PTE_P)
+        }
+        //判断是否该页表项已经存在，如果存在表示已有映射，则可能是错误状态，因此会调用 panic 函数终止程序。
+        if (*pte & PTE_P) {
             panic("remap");
+        }
+        //将页表项设置为新的映射关系，其中 pa 和 perm 分别代表物理地址和权限位掩码。
         *pte = pa | perm | PTE_P;
-        if (a == last)
+        //是否已经映射完全部需要映射的虚拟地址空间。
+        if (a == last) {
             break;
+        }
         a += PGSIZE;
-        pa += PGSIZE;
+        pa += PGSIZE; //页表项里面放入的是物理地址，相当于一个开始地址+12的offset
     }
     return 0;
 }
@@ -123,14 +156,15 @@ setupkvm(void) {
     if ((pgdir = (pde_t *) kalloc()) == 0)
         return 0;
     memset(pgdir, 0, PGSIZE);
-    if (P2V(PHYSTOP) > (void *) DEVSPACE)
+    if (P2V(PHYSTOP) > (void *) DEVSPACE) {
         panic("PHYSTOP too high");
+    }
     for (k = kmap; k < &kmap[NELEM(kmap)];
-    k++)
-    if (mappages(pgdir, k->virt, k->phys_end - k->phys_start,
-                 (uint) k->phys_start, k->perm) < 0) {
-        freevm(pgdir);
-        return 0;
+    k++){
+        if (mappages(pgdir, k->virt, k->phys_end - k->phys_start, (uint) k->phys_start, k->perm) < 0) {
+            freevm(pgdir);
+            return 0;
+        }
     }
     return pgdir;
 }

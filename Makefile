@@ -99,12 +99,17 @@ xv6memfs.img: bootblock kernelmemfs
 	dd if=/dev/zero of=xv6memfs.img count=10000
 	dd if=bootblock of=xv6memfs.img conv=notrunc
 	dd if=kernelmemfs of=xv6memfs.img seek=1 conv=notrunc
+# -fno-pic 禁用位置无关代码（PIC）的生成
+#位置无关代码是一种可在内存中的任意位置加载和执行的代码，常见于共享库等需要在不同进程中加载的程序组件。
+#禁用位置无关代码可能会导致代码大小增加,但可以提高代码的性能
 
+# -nostdinc:指示编译器不要在标准系统目录中搜索头文件。
+#
 bootblock: bootasm.S bootmain.c
 	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c bootasm.S
 	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o bootblock.o bootasm.o bootmain.o
-	$(OBJDUMP) -S bootblock.o > bootblock.asm
+	$(OBJDUMP) -S bootblock.o > bootblock.asm # 反汇编文件输出到*.asm中
 	$(OBJCOPY) -S -O binary -j .text bootblock.o bootblock
 	./sign.pl bootblock
 

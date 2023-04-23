@@ -50,6 +50,7 @@ kinit2(void *vstart, void *vend) {
 void
 freerange(void *vstart, void *vend) {
     char *p;
+    // PGROUNDUP 向上去取页面
     p = (char *) PGROUNDUP((uint) vstart);
     for (; p + PGSIZE <= (char *) vend; p += PGSIZE)
         kfree(p);

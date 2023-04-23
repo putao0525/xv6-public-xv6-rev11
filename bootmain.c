@@ -10,6 +10,8 @@
 #include "x86.h"
 #include "memlayout.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 #define SECTSIZE  512
 
 void readseg(uchar*, uint, uint);
@@ -94,3 +96,5 @@ readseg(uchar* pa, uint count, uint offset)
   for(; pa < epa; pa += SECTSIZE, offset++)
     readsect(pa, offset);
 }
+
+#pragma clang diagnostic pop

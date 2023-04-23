@@ -74,13 +74,15 @@ struct segdesc {
 // +----------------+----------------+---------------------+
 //  \--- PDX(va) --/ \--- PTX(va) --/
 
-// page directory index
-#define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0x3FF)
+//它接受一个虚拟地址(va)作为参数，并返回该地址在页目录中的索引。具体来说，
+//这个宏使用位掩码和位移运算将虚拟地址右移PDXSHIFT位，并按位与0x3FF（即1023），以提取页目录索引的值。其中PDXSHIFT是一个常量，表示页目录项索引在虚拟地址的偏移量。
+// page directory index （系统分页逻辑，查询页目录索引）
+#define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0x3FF) \
 
-// page table index
+// page table index （查询页表索引）
 #define PTX(va)         (((uint)(va) >> PTXSHIFT) & 0x3FF)
 
-// construct virtual address from indexes and offset
+// construct virtual address from indexes and offset 它将给定的页表项的三个部分（目录、表、偏移）组合成一个 32 位无符号整数的虚拟地址
 #define PGADDR(d, t, o) ((uint)((d) << PDXSHIFT | (t) << PTXSHIFT | (o)))
 
 // Page directory and page table constants.
@@ -90,9 +92,11 @@ struct segdesc {
 
 #define PTXSHIFT        12      // offset of PTX in a linear address
 #define PDXSHIFT        22      // offset of PDX in a linear address
-
+//这是一个用来向上舍入页大小的宏定义。假设页大小为PGSIZE，传递给宏的参数为sz，则该宏返回的结果是一个最接近并大于等于sz的PGSIZE的倍数的值。
+//具体而言，该宏先将sz加上PGSIZE-1，这样可以保证在进行下一步操作时，不论sz本身是否已经是PGSIZE的倍数，都能够向上舍入到下一个PGSIZE的倍数。接着，使用按位取反和与运算操作将结果向下舍入到最接近并小于等于sz的PGSIZE的倍数的值。
+//例如，如果定义了PGSIZE为4KB（即4096），那么对于参数sz=5000，该宏计算的结果为：((5000+4095) & ~(4095)) = (9095 & -4096) = 8192 因此，PGROUNDUP(5000) 的返回值为 8192。
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
-#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
+#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))//将参数a向下舍入到最接近的页面边界
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
@@ -101,7 +105,7 @@ struct segdesc {
 #define PTE_PS          0x080   // Page Size
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
+#define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)//它的作用是从页表项中提取出物理页帧地址
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
 
 #ifndef __ASSEMBLER__

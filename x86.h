@@ -44,6 +44,11 @@ stosb(void *addr, int data, int cnt) {
             "memory", "cc");
 }
 
+//"cld; rep stosl" 是实际的汇编指令部分，它首先使用 cld 指令清除方向标志位，然后使用 rep stosl 指令依次将 data 写入 cnt 个双字（即32位）内存空间中。
+//: "=D" (addr), "=c" (cnt) 表示输出操作数列表，
+// 其中 "=D" 表示将目标内存地址 addr 的值赋给寄存器 EDI，"=c" 表示将数据长度 cnt 的值赋给寄存器 ECX，并将它们作为输出参数返回。
+//: "0" (addr), "1" (cnt), "a" (data) 表示输入操作数列表，其中 "0"、"1" 和 "a" 分别表示输入参数在函数调用中的位置，即第1个、第2个和第3个参数。
+//: "memory", "cc" 表示代码段可能会修改内存数据和条件码寄存器（CF、OF、PF、SF、ZF、AF），通知编译器需要进行额外的优化限制。
 static inline void
 stosl(void *addr, int data, int cnt) {
     asm volatile("cld; rep stosl" :

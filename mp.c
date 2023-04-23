@@ -11,6 +11,9 @@
 #include "mmu.h"
 #include "proc.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvoid-pointer-to-int-cast"
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 struct cpu cpus[NCPU];
 int ncpu;
 uchar ioapicid;
@@ -25,6 +28,7 @@ sum(uchar *addr, int len)
     sum += addr[i];
   return sum;
 }
+
 
 // Look for an MP structure in the len bytes at addr.
 static struct mp*
@@ -137,3 +141,5 @@ mpinit(void)
     outb(0x23, inb(0x23) | 1);  // Mask external interrupts.
   }
 }
+
+#pragma clang diagnostic pop

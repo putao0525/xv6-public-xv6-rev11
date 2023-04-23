@@ -291,4 +291,4 @@ int copyout(pde_t *, uint, void *, uint);
 void clearpteu(pde_t *pgdir, char *uva);
 
 // number of elements in fixed-size array
-#define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+#define NELEM(x) (sizeof(x)/sizeof((x)[0]))//用于计算数组的元素个数。

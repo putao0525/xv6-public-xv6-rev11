@@ -6,6 +6,9 @@
 #include "proc.h"
 #include "x86.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpointer-to-int-cast"
+#pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"
 static void startothers(void);
 
 static void mpmain(void)  __attribute__((noreturn));
@@ -118,3 +121,5 @@ pde_t entrypgdir[NPDENTRIES] = {
 //PAGEBREAK!
 // Blank page.
 
+
+#pragma clang diagnostic pop
