@@ -7,9 +7,6 @@
 #include "proc.h"
 #include "spinlock.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
-#pragma clang diagnostic ignored "-Wpointer-to-int-cast"
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
@@ -133,8 +130,6 @@ allocproc(void) {
     return p;
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpointer-to-int-cast"
 
 //PAGEBREAK: 32
 // Set up first user process.
@@ -178,7 +173,6 @@ userinit(void) {
     release(&ptable.lock);
 }
 
-#pragma clang diagnostic pop
 
 // Grow current process's memory by n bytes.
 // Return 0 on success, -1 on failure.
@@ -296,7 +290,7 @@ exit(void) {
 int
 wait(void) {
     struct proc *p;
-    int havek   ids, pid;
+    int havekids, pid;
     struct proc *curproc = myproc();
 
     acquire(&ptable.lock);
@@ -551,5 +545,3 @@ procdump(void) {
         cprintf("\n");
     }
 }
-
-#pragma clang diagnostic pop

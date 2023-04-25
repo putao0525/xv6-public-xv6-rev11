@@ -89,7 +89,8 @@ endif
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
 CFLAGS += -fno-pie -nopie
 endif
-
+#dd if=/dev/zero of=xv6.img count=10000：创建一个名为xv6.img的磁盘映像文件，并将文件大小设置为10000块。每个块的大小由系统决定，通常为512字节。这个命令会将所有块都初始化为0。
+#'seek=1'选项告诉dd命令从第二个块开始写入数据，跳过了第一个块（也就是引导块）。其他选项的含义与第二个命令相同
 xv6.img: bootblock kernel
 	dd if=/dev/zero of=xv6.img count=10000
 	dd if=bootblock of=xv6.img conv=notrunc

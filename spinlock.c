@@ -9,8 +9,6 @@
 #include "proc.h"
 #include "spinlock.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 
 void
 initlock(struct spinlock *lk, char *name) {
@@ -127,6 +125,3 @@ popcli(void) {
     if (mycpu()->ncli == 0 && mycpu()->intena)
         sti();
 }
-
-
-#pragma clang diagnostic pop

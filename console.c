@@ -15,8 +15,6 @@
 #include "proc.h"
 #include "x86.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 
 static void consputc(int);
 
@@ -296,6 +294,3 @@ consoleinit(void) {
     //apic 可编程中断处理逻辑
     ioapicenable(IRQ_KBD, 0);
 }
-
-
-#pragma clang diagnostic pop

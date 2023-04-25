@@ -5,7 +5,7 @@
 #define SEG_NULLASM                                             \
         .word 0, 0;                                             \
         .byte 0, 0, 0, 0
-
+//  SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)   # code seg
 // The 0xC0 means the limit is in 4096-byte units
 // and (for executable segments) 32-bit mode.
 #define SEG_ASM(type,base,lim)                                  \

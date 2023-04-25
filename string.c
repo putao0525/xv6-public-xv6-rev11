@@ -1,9 +1,6 @@
 #include "types.h"
 #include "x86.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvoid-pointer-to-int-cast"
-#pragma clang diagnostic ignored "-Wincompatible-library-redeclaration"
 
 
 ///这是一个C语言中的内存清零函数，用于将一段内存区域中的所有字节都设置为指定的值。
@@ -103,5 +100,3 @@ strlen(const char *s) {
     return n;
 }
 
-
-#pragma clang diagnostic pop

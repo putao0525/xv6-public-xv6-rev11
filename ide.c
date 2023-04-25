@@ -13,8 +13,6 @@
 #include "fs.h"
 #include "buf.h"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
 #define SECTOR_SIZE   512
 #define IDE_BSY       0x80
 #define IDE_DRDY      0x40
@@ -82,8 +80,7 @@ idestart(struct buf *b) {
     int read_cmd = (sector_per_block == 1) ? IDE_CMD_READ : IDE_CMD_RDMUL;
     int write_cmd = (sector_per_block == 1) ? IDE_CMD_WRITE : IDE_CMD_WRMUL;
 
-    if (sector_per_block > 7) { panic("idestart") };
-
+    if (sector_per_block > 7) { panic("idestart"); }
     idewait(0);
     outb(0x3f6, 0);  // generate interrupt
     outb(0x1f2, sector_per_block);  // number of sectors
@@ -164,5 +161,3 @@ iderw(struct buf *b) {
 
     release(&idelock);
 }
-
-#pragma clang diagnostic pop

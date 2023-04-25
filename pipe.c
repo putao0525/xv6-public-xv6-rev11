@@ -12,9 +12,10 @@
 
 struct pipe {
   struct spinlock lock;
-  char data[PIPESIZE];
-  uint nread;     // number of bytes read
-  uint nwrite;    // number of bytes written
+  char data[PIPESIZE];//用于存储管道中的数据
+  uint nread;     // number of bytes read 已经读取
+  uint nwrite;    // number of bytes written 已经写入到管道的字节数
+  //两个整数类型的成员变量，用于标志读端和写端是否处于打开状态。如果相应的端口已经关闭，则该值为0；否则，它的值为非零。
   int readopen;   // read fd is still open
   int writeopen;  // write fd is still open
 };

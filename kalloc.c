@@ -9,10 +9,6 @@
 #include "mmu.h"
 #include "spinlock.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpointer-to-int-cast"
-#pragma clang diagnostic ignored "-Wvoid-pointer-to-int-cast"
-#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 
 void freerange(void *vstart, void *vend);
 
@@ -100,5 +96,3 @@ kalloc(void) {
     return (char *) r;
 }
 
-
-#pragma clang diagnostic pop

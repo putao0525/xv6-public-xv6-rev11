@@ -13,8 +13,6 @@
 // library system call function. The saved user %esp points
 // to a saved program counter, and then the first argument.
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
 // Fetch the int at addr from the current process.
 int
 fetchint(uint addr, int *ip) {
@@ -159,5 +157,3 @@ syscall(void) {
         curproc->tf->eax = -1;
     }
 }
-
-#pragma clang diagnostic pop
